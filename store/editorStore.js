@@ -36,18 +36,22 @@ p {
   margin: 8px 0;
 }`;
 
-const defaultData = JSON.stringify({
-  name: "Gonzalo",
-  user: {
-    email: "gonzalo@example.com"
-  },
-  description: "Welcome to the template editor!",
-  resultados: [
-    { titulo: "Ventas Q1", valor: "$12,500" },
-    { titulo: "Ventas Q2", valor: "$15,800" },
-    { titulo: "Ventas Q3", valor: "$18,200" }
-  ]
-}, null, 2);
+const getDefaultData = (userName = "Usuario", userEmail = "usuario@example.com") => {
+  return JSON.stringify({
+    name: userName,
+    user: {
+      email: userEmail
+    },
+    description: "Welcome to the template editor!",
+    resultados: [
+      { titulo: "Ventas Q1", valor: "$12,500" },
+      { titulo: "Ventas Q2", valor: "$15,800" },
+      { titulo: "Ventas Q3", valor: "$18,200" }
+    ]
+  }, null, 2);
+};
+
+const defaultData = getDefaultData();
 
 export const useEditorStore = create((set) => ({
   html: defaultHtml,
@@ -57,6 +61,40 @@ export const useEditorStore = create((set) => ({
   setHtml: (html) => set({ html }),
   setCss: (css) => set({ css }),
   setData: (data) => set({ data }),
+  
+  updateUserData: (user) => {
+    // Obtener el nombre del usuario desde user_metadata, priorizando display_name
+    const displayName = user?.user_metadata?.display_name || 
+                       user?.user_metadata?.full_name || 
+                       user?.user_metadata?.name ||
+                       user?.email?.split('@')[0] || 
+                       "Usuario";
+    const email = user?.email || "usuario@example.com";
+    
+    // Obtener los datos actuales
+    set((state) => {
+      try {
+        const currentData = JSON.parse(state.data);
+        // Actualizar solo name y user.email, mantener el resto
+        const updatedData = {
+          ...currentData,
+          name: displayName,
+          user: {
+            ...currentData.user,
+            email: email
+          }
+        };
+        return {
+          data: JSON.stringify(updatedData, null, 2)
+        };
+      } catch {
+        // Si hay error parseando, crear datos nuevos
+        return {
+          data: getDefaultData(displayName, email)
+        };
+      }
+    });
+  },
   
   applyAIResponse: (response) => {
     const { html, css, data } = response;

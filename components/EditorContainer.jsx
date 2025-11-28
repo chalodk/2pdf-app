@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Tabs from './Tabs';
 import HtmlEditor from './Editors/HtmlEditor';
@@ -23,6 +23,28 @@ export default function EditorContainer() {
   const setHtml = useEditorStore((state) => state.setHtml);
   const setCss = useEditorStore((state) => state.setCss);
   const setData = useEditorStore((state) => state.setData);
+  const updateUserData = useEditorStore((state) => state.updateUserData);
+
+  // Update user data when component mounts or user changes
+  useEffect(() => {
+    const updateDataWithUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        updateUserData(user);
+      }
+    };
+
+    updateDataWithUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        updateUserData(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [updateUserData]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

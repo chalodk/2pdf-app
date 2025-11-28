@@ -79,7 +79,7 @@ async function generatePDF(html, css, data) {
     const jsonData = JSON.parse(data);
     const template = buildTemplate(html, css);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const response = await fetch(`${apiUrl}/render`, {
       method: 'POST',
       headers: {
