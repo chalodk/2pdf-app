@@ -1,5 +1,4 @@
 [build]
-  base = "2pdf-app"
   command = "npm run build"
   publish = ".next"
 
