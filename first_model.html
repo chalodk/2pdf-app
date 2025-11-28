@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jonas Falkesgaard Bech – Portfolio CV</title>
+
+<!-- TIPOGRAFÍA EDITORIAL -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #fdfdfd;
+    --text: #1e293b;
+    --muted: #64748b;
+    --accent: #2563eb;
+    --accent-light: rgba(37, 99, 235, 0.10);
+    --card: #ffffff;
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: "Inter", sans-serif;
+    color: var(--text);
+    padding: 40px 22px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .wrapper {
+    max-width: 920px;
+    width: 100%;
+    padding: 40px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 22px 60px rgba(0,0,0,0.07);
+  }
+
+  /* CABECERA PORTAFOLIO */
+  .header {
+    margin-bottom: 50px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .header h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.8rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  .tag {
+    margin-top: 6px;
+    padding: 6px 14px;
+    background: var(--accent-light);
+    border-radius: var(--radius);
+    display: inline-block;
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* AVATAR */
+  .avatar {
+    width: 200px;
+    height: 250px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border: 3px solid var(--card);
+  }
+
+  /* CONTACTO */
+  .contact-block {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* CONTENEDORES DE SECCIÓN */
+  .section {
+    margin-top: 48px;
+  }
+
+  .section h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 1.6rem;
+    margin-bottom: 14px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  /* GRID EXPERIENCIAS */
+  .experience-list {
+    display: grid;
+    gap: 22px;
+    margin-top: 10px;
+  }
+
+  .experience-item {
+    padding: 22px 24px;
+    border-radius: var(--radius);
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+
+  .experience-item h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .experience-item .meta {
+    margin-top: 4px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  /* SECCIÓN STORY / VIAJE */
+  .story {
+    padding: 24px;
+    border-radius: var(--radius);
+    background: #f1f5f9;
+    color: #334155;
+    line-height: 1.7;
+    font-size: 1rem;
+  }
+
+  /* HABILIDADES / IDIOMAS */
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .pill {
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  /* EDUCACIÓN */
+  .edu-item {
+    margin-bottom: 20px;
+  }
+
+  .edu-item-title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .edu-item-meta {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  /* IMPRESIÓN PDF */
+  @media print {
+    body { background: white; padding: 0; }
+    .wrapper {
+      box-shadow: none;
+      padding: 25px 35px;
+      border-radius: 0;
+    }
+  }
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+  <!-- CABECERA / PORTAFOLIO -->
+  <div class="header">
+    <div>
+      <h1>Jonas Falkesgaard Bech</h1>
+      <span class="tag">Detail-oriented Retail Specialist</span>
+
+      <div class="contact-block">
+        Født: 1. august 1990<br>
+        Adamsgade 11, 3.tv., 5000 Odense C<br>
+        <strong>Telefon:</strong> (+45) 23 66 57 89<br>
+        <strong>Email:</strong> jonas_bech@hotmail.com
+      </div>
+    </div>
+    <img src="https://qujpaakxpmoogqrbpnug.supabase.co/storage/v1/object/public/images-cv/WhatsApp%20Image%202025-11-21%20at%2016.03.11.jpeg" alt="Jonas Falkesgaard Bech" class="avatar" />
+  </div>
+
+  <!-- EXPERIENCIA -->
+  <div class="section">
+    <h2>Erhvervserfaring</h2>
+
+    <div class="experience-list">
+
+      <div class="experience-item">
+        <h3>Salgsassistent – Kaufmann, Odense</h3>
+        <div class="meta">Apr. 2025 – Nu</div>
+      </div>
+
+      <div class="experience-item">
+        <h3>1. mand – Tøjeksperten, Odense</h3>
+        <div class="meta">Apr. 2024 – Okt. 2024</div>
+      </div>
+
+      <div class="experience-item">
+        <h3>Salgsassistent – Kaufmann, Odense</h3>
+        <div class="meta">Apr. 2023 – Mar. 2024</div>
+      </div>
+
+      <div class="experience-item">
+        <h3>Salgsassistent – Kaufmann, Odense</h3>
+        <div class="meta">Nov. 2017 – Okt. 2021</div>
+      </div>
+
+      <div class="experience-item">
+        <h3>Salgsassistent – Kaufmann, Lyngby</h3>
+        <div class="meta">Okt. 2016 – Okt. 2017</div>
+      </div>
+
+      <div class="experience-item">
+        <h3>1. mand – Guayabo Guayaberas (Santiago de Chile)</h3>
+        <div class="meta">Feb. 2016 – Aug. 2016</div>
+      </div>
+
+      <div class="experience-item">
+        <h3>Salgsassistent – One Oak</h3>
+        <div class="meta">Dec. 2012 – Jun. 2013</div>
+      </div>
+
+      <div class="experience-item">
+        <h3>Kassemedarbejder – Kvickly</h3>
+        <div class="meta">Dec. 2010 – Feb. 2013</div>
+      </div>
+
+      <div class="experience-item">
+        <h3>Piccolo – Jyske Bank</h3>
+        <div class="meta">Aug. 2007 – Aug. 2008</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VIAJE / STORY -->
+  <div class="section">
+    <h2>Rejse · Personlig Udvikling</h2>
+    <div class="story">
+      Jeg tog halvandet år (okt. 2021 – apr. 2023) til Sevilla for at lære spansk og
+      udforske kulturen. Jeg havde småjobs undervejs, men rejsen handlede mest om
+      personlig udvikling, kulturel forståelse og at opnå flydende spansk.
+    </div>
+  </div>
+
+  <!-- SPROG -->
+  <div class="section">
+    <h2>Sprog</h2>
+    <div class="pill-row">
+      <span class="pill">Dansk · Modersmål</span>
+      <span class="pill">Engelsk · Flydende</span>
+      <span class="pill">Spansk · Flydende</span>
+      <span class="pill">Tysk · Middel</span>
+    </div>
+  </div>
+
+  <!-- UDDANNELSE -->
+  <div class="section">
+    <h2>Uddannelse</h2>
+
+    <div class="edu-item">
+      <div class="edu-item-title">Handelsfagskolen via Kaufmann Frederiksberg</div>
+      <div class="edu-item-meta">Aug. 2013 – Aug. 2015</div>
+    </div>
+
+    <div class="edu-item">
+      <div class="edu-item-title">Odense Katedralskole</div>
+      <div class="edu-item-meta">Aug. 2007 – Jun. 2010</div>
+    </div>
+
+    <div class="edu-item">
+      <div class="edu-item-title">Tommerup Efterskole</div>
+      <div class="edu-item-meta">Aug. 2005 – Jun. 2007</div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

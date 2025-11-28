@@ -1,0 +1,70 @@
+import { create } from 'zustand';
+
+const defaultHtml = `<div class="card">
+  <h1>Hello {{name}}</h1>
+  <p>Email: {{user.email}}</p>
+  <p>{{description}}</p>
+  
+  <h2>Resultados</h2>
+  <ul>
+    {% for resultado in resultados %}
+    <li>{{resultado.titulo}} - {{resultado.valor}}</li>
+    {% endfor %}
+  </ul>
+</div>`;
+
+const defaultCss = `body {
+  font-family: 'Inter', sans-serif;
+  padding: 20px;
+  background: #f5f5f5;
+}
+
+.card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+h1 {
+  color: #2563eb;
+  margin-bottom: 12px;
+}
+
+p {
+  color: #64748b;
+  margin: 8px 0;
+}`;
+
+const defaultData = JSON.stringify({
+  name: "Gonzalo",
+  user: {
+    email: "gonzalo@example.com"
+  },
+  description: "Welcome to the template editor!",
+  resultados: [
+    { titulo: "Ventas Q1", valor: "$12,500" },
+    { titulo: "Ventas Q2", valor: "$15,800" },
+    { titulo: "Ventas Q3", valor: "$18,200" }
+  ]
+}, null, 2);
+
+export const useEditorStore = create((set) => ({
+  html: defaultHtml,
+  css: defaultCss,
+  data: defaultData,
+  
+  setHtml: (html) => set({ html }),
+  setCss: (css) => set({ css }),
+  setData: (data) => set({ data }),
+  
+  applyAIResponse: (response) => {
+    const { html, css, data } = response;
+    set({
+      html: html || defaultHtml,
+      css: css || defaultCss,
+      data: data ? (typeof data === 'string' ? data : JSON.stringify(data, null, 2)) : defaultData,
+    });
+  },
+}));
+
