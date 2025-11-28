@@ -1,1 +1,39 @@
-self.__BUILD_MANIFEST={polyfillFiles:["static/chunks/polyfills-42372ed130431b0a.js"],devFiles:[],ampDevFiles:[],lowPriorityFiles:[],rootMainFiles:[],pages:{"/":["static/chunks/webpack-9339c7e225139a0a.js","static/chunks/framework-64ad27b21261a9ce.js","static/chunks/main-6cf8209804096634.js","static/chunks/535-8f08f6f49c524a70.js","static/chunks/152-c5943699449c8ab4.js","static/chunks/pages/index-9975acfb1376fa05.js"],"/_app":["static/chunks/webpack-9339c7e225139a0a.js","static/chunks/framework-64ad27b21261a9ce.js","static/chunks/main-6cf8209804096634.js","static/css/cea42653cdbc2a3a.css","static/chunks/pages/_app-4c62d62d2a8c278f.js"],"/_error":["static/chunks/webpack-9339c7e225139a0a.js","static/chunks/framework-64ad27b21261a9ce.js","static/chunks/main-6cf8209804096634.js","static/chunks/pages/_error-7a92967bea80186d.js"],"/template-editor":["static/chunks/webpack-9339c7e225139a0a.js","static/chunks/framework-64ad27b21261a9ce.js","static/chunks/main-6cf8209804096634.js","static/chunks/535-8f08f6f49c524a70.js","static/chunks/152-c5943699449c8ab4.js","static/chunks/pages/template-editor-b38ca675aae7d4d1.js"]},ampFirstPages:[]},self.__BUILD_MANIFEST.lowPriorityFiles=["/static/"+process.env.__NEXT_BUILD_ID+"/_buildManifest.js",,"/static/"+process.env.__NEXT_BUILD_ID+"/_ssgManifest.js"];
+self.__BUILD_MANIFEST = {
+  "polyfillFiles": [
+    "static/chunks/polyfills.js"
+  ],
+  "devFiles": [
+    "static/chunks/react-refresh.js"
+  ],
+  "ampDevFiles": [],
+  "lowPriorityFiles": [],
+  "rootMainFiles": [],
+  "pages": {
+    "/": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/index.js"
+    ],
+    "/_app": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/_app.js"
+    ],
+    "/_error": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/_error.js"
+    ],
+    "/login": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/login.js"
+    ]
+  },
+  "ampFirstPages": []
+};
+self.__BUILD_MANIFEST.lowPriorityFiles = [
+"/static/" + process.env.__NEXT_BUILD_ID + "/_buildManifest.js",
+,"/static/" + process.env.__NEXT_BUILD_ID + "/_ssgManifest.js",
+
+];

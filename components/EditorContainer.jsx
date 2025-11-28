@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import Tabs from './Tabs';
 import HtmlEditor from './Editors/HtmlEditor';
 import CssEditor from './Editors/CssEditor';
@@ -7,10 +8,13 @@ import DataEditor from './Editors/DataEditor';
 import PreviewPane from './PreviewPane';
 import AIChatSidebar from './AIChatSidebar';
 import { useEditorStore } from '../store/editorStore';
+import { supabase } from '../lib/supabase';
 
 export default function EditorContainer() {
   const [activeTab, setActiveTab] = useState('HTML');
   const [showAISidebar, setShowAISidebar] = useState(true);
+  const [isClosing, setIsClosing] = useState(false);
+  const router = useRouter();
   
   // Get state from Zustand store
   const html = useEditorStore((state) => state.html);
@@ -19,6 +23,24 @@ export default function EditorContainer() {
   const setHtml = useEditorStore((state) => state.setHtml);
   const setCss = useEditorStore((state) => state.setCss);
   const setData = useEditorStore((state) => state.setData);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
+  const handleToggleSidebar = () => {
+    if (showAISidebar) {
+      // Iniciar animación de salida
+      setIsClosing(true);
+      setTimeout(() => {
+        setShowAISidebar(false);
+        setIsClosing(false);
+      }, 300); // Duración de la animación
+    } else {
+      setShowAISidebar(true);
+    }
+  };
 
   const renderEditor = () => {
     switch (activeTab) {
@@ -35,17 +57,55 @@ export default function EditorContainer() {
 
   return (
     <div className={`editor-layout ${showAISidebar ? 'with-sidebar' : 'no-sidebar'}`}>
-      {showAISidebar && <AIChatSidebar />}
-      <div className="left-panel">
-        <div className="panel-header">
-          <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+      {showAISidebar && (
+        <div className={`ai-sidebar-container ${isClosing ? 'closing' : ''}`}>
           <button
             className="ai-toggle-btn"
-            onClick={() => setShowAISidebar(!showAISidebar)}
-            title={showAISidebar ? 'Ocultar AI' : 'Mostrar AI'}
+            onClick={handleToggleSidebar}
+            title="Ocultar AI"
           >
-            {showAISidebar ? '✕' : '🤖'}
+            ✕
           </button>
+          <AIChatSidebar />
+        </div>
+      )}
+      <div className="left-panel">
+        <div className="panel-header">
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {!showAISidebar && (
+              <button
+                className="ai-toggle-btn"
+                onClick={handleToggleSidebar}
+                title="Mostrar AI"
+              >
+                🤖
+              </button>
+            )}
+            <button
+              className="logout-btn"
+              onClick={handleLogout}
+              title="Cerrar sesión"
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#21262d',
+                color: '#c9d1d9',
+                border: '1px solid #30363d',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#30363d';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = '#21262d';
+              }}
+            >
+              Salir
+            </button>
+          </div>
+          <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
         </div>
         <div className="editor-wrapper">
           {renderEditor()}
