@@ -94,6 +94,32 @@ export default function EditorContainer() {
       <div className="left-panel">
         <div className="panel-header">
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button
+              className="back-btn"
+              onClick={() => router.push('/templates')}
+              title="Regresar a Templates"
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#21262d',
+                color: '#c9d1d9',
+                border: '1px solid #30363d',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                transition: 'background-color 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#30363d';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = '#21262d';
+              }}
+            >
+              ← Regresar
+            </button>
             {!showAISidebar && (
               <button
                 className="ai-toggle-btn"
