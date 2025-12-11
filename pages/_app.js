@@ -1,4 +1,5 @@
 import '../styles/editor.css';
+import '../styles/settings.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
