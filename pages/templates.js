@@ -36,14 +36,14 @@ export default function Templates() {
   };
 
   const handleTemplateAction = async (action, templateId, errorMessage) => {
-    if (action === 'deleted' || action === 'duplicated') {
+    if (action === 'deleted' || action === 'duplicated' || action === 'renamed') {
       await refreshTemplates();
-      showToast(
-        action === 'deleted' 
-          ? 'Template eliminado exitosamente' 
-          : 'Template duplicado exitosamente',
-        'success'
-      );
+      const messages = {
+        deleted: 'Template eliminado exitosamente',
+        duplicated: 'Template duplicado exitosamente',
+        renamed: 'Template renombrado exitosamente',
+      };
+      showToast(messages[action] || 'Acción completada', 'success');
     } else if (action === 'copied') {
       showToast('ID copiado al portapapeles', 'success');
     } else if (action === 'error') {

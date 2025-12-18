@@ -5,16 +5,19 @@ import { CodeIcon, CopyIcon, AlertIcon, EditIcon, MoreVerticalIcon } from './Ico
 import { useTemplates } from '../hooks/useTemplates';
 import { useEditorStore } from '../store/editorStore';
 import ConfirmModal from './ConfirmModal';
+import RenameModal from './RenameModal';
 
 export default function TemplateListItem({ template, onAction }) {
   const router = useRouter();
-  const { loadTemplate, removeTemplate, duplicateTemplate } = useTemplates();
+  const { loadTemplate, removeTemplate, duplicateTemplate, renameTemplate } = useTemplates();
   const { setHtml, setCss, setData } = useEditorStore();
   const [loading, setLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [renaming, setRenaming] = useState(false);
   const menuRef = useRef(null);
 
   const handleEdit = async () => {
@@ -83,6 +86,24 @@ export default function TemplateListItem({ template, onAction }) {
     }
   };
 
+  const handleRename = async (newName) => {
+    try {
+      setRenaming(true);
+      await renameTemplate(template.id, newName);
+      if (onAction) {
+        onAction('renamed', template.id);
+      }
+    } catch (error) {
+      console.error('Error renaming template:', error);
+      if (onAction) {
+        onAction('error', template.id, error.message);
+      }
+      throw error;
+    } finally {
+      setRenaming(false);
+    }
+  };
+
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -120,7 +141,7 @@ export default function TemplateListItem({ template, onAction }) {
             <button 
               className="template-more-btn"
               onClick={() => setShowMenu(!showMenu)}
-              disabled={deleting || duplicating}
+              disabled={deleting || duplicating || renaming}
             >
               <MoreVerticalIcon />
             </button>
@@ -138,6 +159,35 @@ export default function TemplateListItem({ template, onAction }) {
                 zIndex: 100,
                 minWidth: '160px',
               }}>
+                <button
+                  onClick={() => {
+                    setShowRenameModal(true);
+                    setShowMenu(false);
+                  }}
+                  disabled={renaming}
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    backgroundColor: 'transparent',
+                    color: '#c9d1d9',
+                    border: 'none',
+                    textAlign: 'left',
+                    cursor: renaming ? 'not-allowed' : 'pointer',
+                    fontSize: '0.875rem',
+                    borderBottom: '1px solid #30363d',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                  onMouseOver={(e) => {
+                    if (!renaming) e.target.style.backgroundColor = '#21262d';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  Renombrar
+                </button>
                 <button
                   onClick={handleDuplicate}
                   disabled={duplicating}
@@ -229,6 +279,13 @@ export default function TemplateListItem({ template, onAction }) {
         confirmText="Eliminar"
         cancelText="Cancelar"
         isDestructive={true}
+      />
+      
+      <RenameModal
+        isOpen={showRenameModal}
+        onClose={() => setShowRenameModal(false)}
+        onSave={handleRename}
+        currentName={template.name}
       />
     </div>
   );
