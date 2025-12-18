@@ -112,12 +112,8 @@ export default function EditorContainer() {
   
   // Verificar cambios no guardados periódicamente
   useEffect(() => {
-    const checkChanges = () => {
-      setUnsavedChanges(checkUnsavedChanges());
-    };
-    
-    // Verificar cambios cada vez que cambie html, css o data
-    checkChanges();
+    const hasChanges = html !== savedHtml || css !== savedCss || data !== savedData;
+    setUnsavedChanges(hasChanges);
   }, [html, css, data, savedHtml, savedCss, savedData]);
   
   // Advertencia al salir sin guardar
