@@ -152,6 +152,11 @@ export default function EditorContainer() {
     } else if (!templateId && currentTemplateId) {
       // Si no hay templateId en la URL, limpiar el estado
       setCurrentTemplateId(null);
+      // Marcar como guardado cuando se limpia (nuevo template)
+      markAsSaved();
+    } else if (!templateId && !currentTemplateId) {
+      // Si es un template nuevo, marcar estado inicial como guardado
+      markAsSaved();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.templateId]);
