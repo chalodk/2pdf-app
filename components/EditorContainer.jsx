@@ -98,7 +98,11 @@ export default function EditorContainer() {
         alert('Template guardado exitosamente');
       }
       // Marcar como guardado después de guardar exitosamente
-      markAsSaved();
+      // Usar setTimeout para asegurar que el estado se actualice después del render
+      setTimeout(() => {
+        markAsSaved();
+        setUnsavedChanges(false);
+      }, 100);
       setShowSaveModal(false);
     } catch (error) {
       console.error('Error saving template:', error);
