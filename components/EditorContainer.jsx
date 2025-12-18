@@ -7,6 +7,7 @@ import CssEditor from './Editors/CssEditor';
 import DataEditor from './Editors/DataEditor';
 import PreviewPane from './PreviewPane';
 import AIChatSidebar from './AIChatSidebar';
+import Toast from './Toast';
 import { useEditorStore } from '../store/editorStore';
 import { supabase } from '../lib/supabase';
 import { useTemplates } from '../hooks/useTemplates';
@@ -38,9 +39,17 @@ export default function EditorContainer() {
   // Estado para rastrear cambios no guardados
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   
+  // Estado para toast notifications
+  const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
+  
   // Función para verificar cambios no guardados
   const checkUnsavedChanges = () => {
     return html !== savedHtml || css !== savedCss || data !== savedData;
+  };
+  
+  // Función para mostrar toast
+  const showToast = (message, type = 'success') => {
+    setToast({ isVisible: true, message, type });
   };
 
   // Update user data when component mounts or user changes
@@ -96,7 +105,7 @@ export default function EditorContainer() {
           data,
           notes: `Actualizado: ${new Date().toLocaleString()}`,
         });
-        alert('Template actualizado exitosamente');
+        showToast('Template actualizado exitosamente', 'success');
       } else {
         // Crear nuevo template - usar nombre por defecto
         const defaultName = `Template ${new Date().toLocaleDateString('es-ES', { 
@@ -113,7 +122,7 @@ export default function EditorContainer() {
           css, 
           data 
         });
-        alert('Template guardado exitosamente');
+        showToast('Template guardado exitosamente', 'success');
       }
       // Marcar como guardado después de guardar exitosamente
       setTimeout(() => {
@@ -122,7 +131,7 @@ export default function EditorContainer() {
       }, 100);
     } catch (error) {
       console.error('Error saving template:', error);
-      alert('Error al guardar el template: ' + error.message);
+      showToast('Error al guardar el template: ' + error.message, 'error');
     } finally {
       setSaving(false);
     }
@@ -168,7 +177,7 @@ export default function EditorContainer() {
         })
         .catch((error) => {
           console.error('Error loading template:', error);
-          alert('Error al cargar el template: ' + error.message);
+          showToast('Error al cargar el template: ' + error.message, 'error');
         });
     } else if (!templateId && currentTemplateId) {
       // Si no hay templateId en la URL, limpiar el estado
