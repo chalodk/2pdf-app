@@ -29,6 +29,18 @@ export default function EditorContainer() {
   const setCss = useEditorStore((state) => state.setCss);
   const setData = useEditorStore((state) => state.setData);
   const updateUserData = useEditorStore((state) => state.updateUserData);
+  const markAsSaved = useEditorStore((state) => state.markAsSaved);
+  const savedHtml = useEditorStore((state) => state.savedHtml);
+  const savedCss = useEditorStore((state) => state.savedCss);
+  const savedData = useEditorStore((state) => state.savedData);
+  
+  // Estado para rastrear cambios no guardados
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
+  
+  // Función para verificar cambios no guardados
+  const checkUnsavedChanges = () => {
+    return html !== savedHtml || css !== savedCss || data !== savedData;
+  };
 
   // Update user data when component mounts or user changes
   useEffect(() => {
@@ -85,11 +97,36 @@ export default function EditorContainer() {
         await saveTemplate({ name, description, html, css, data });
         alert('Template guardado exitosamente');
       }
+      // Marcar como guardado después de guardar exitosamente
+      markAsSaved();
       setShowSaveModal(false);
     } catch (error) {
       console.error('Error saving template:', error);
       alert('Error al guardar el template: ' + error.message);
     }
+  };
+  
+  // Verificar cambios no guardados periódicamente
+  useEffect(() => {
+    const checkChanges = () => {
+      setUnsavedChanges(checkUnsavedChanges());
+    };
+    
+    // Verificar cambios cada vez que cambie html, css o data
+    checkChanges();
+  }, [html, css, data, savedHtml, savedCss, savedData]);
+  
+  // Advertencia al salir sin guardar
+  const handleBackClick = () => {
+    if (unsavedChanges) {
+      const confirmLeave = window.confirm(
+        'Tienes cambios no guardados. ¿Estás seguro de que quieres salir sin guardar?'
+      );
+      if (!confirmLeave) {
+        return;
+      }
+    }
+    router.push('/templates');
   };
 
   // Cargar template desde query params si existe
@@ -97,12 +134,16 @@ export default function EditorContainer() {
     const templateId = router.query.templateId;
     if (templateId && typeof templateId === 'string' && templateId !== currentTemplateId) {
       setCurrentTemplateId(templateId);
-      // Cargar el template
+        // Cargar el template
       loadTemplate(templateId)
         .then((templateData) => {
           setHtml(templateData.version.html);
           setCss(templateData.version.css);
           setData(templateData.version.data || '{}');
+          // Marcar como guardado después de cargar
+          setTimeout(() => {
+            markAsSaved();
+          }, 100);
         })
         .catch((error) => {
           console.error('Error loading template:', error);
@@ -147,7 +188,7 @@ export default function EditorContainer() {
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <button
               className="back-btn"
-              onClick={() => router.push('/templates')}
+              onClick={handleBackClick}
               title="Regresar a Templates"
               style={{
                 padding: '0.5rem 1rem',
@@ -183,10 +224,10 @@ export default function EditorContainer() {
             <button
               className="save-btn"
               onClick={() => setShowSaveModal(true)}
-              title="Guardar template"
+              title={unsavedChanges ? 'Tienes cambios no guardados' : 'Guardar template'}
               style={{
                 padding: '0.5rem 1rem',
-                backgroundColor: '#238636',
+                backgroundColor: unsavedChanges ? '#f59e0b' : '#238636',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '6px',
@@ -194,15 +235,31 @@ export default function EditorContainer() {
                 fontSize: '0.875rem',
                 fontWeight: '500',
                 transition: 'background-color 0.2s',
+                position: 'relative',
               }}
               onMouseOver={(e) => {
-                e.target.style.backgroundColor = '#2ea043';
+                e.target.style.backgroundColor = unsavedChanges ? '#d97706' : '#2ea043';
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundColor = '#238636';
+                e.target.style.backgroundColor = unsavedChanges ? '#f59e0b' : '#238636';
               }}
             >
+              {unsavedChanges && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: '#ef4444',
+                    borderRadius: '50%',
+                    border: '2px solid #fff',
+                  }}
+                />
+              )}
               {currentTemplateId ? 'Actualizar' : 'Guardar'}
+              {unsavedChanges && ' •'}
             </button>
             <button
               className="logout-btn"
