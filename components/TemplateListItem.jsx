@@ -4,13 +4,15 @@ import { useRouter } from 'next/router';
 import { CodeIcon, CopyIcon, AlertIcon, EditIcon, MoreVerticalIcon } from './Icons';
 import { useTemplates } from '../hooks/useTemplates';
 import { useEditorStore } from '../store/editorStore';
+import ConfirmModal from './ConfirmModal';
 
-export default function TemplateListItem({ template }) {
+export default function TemplateListItem({ template, onAction }) {
   const router = useRouter();
   const { loadTemplate, removeTemplate, duplicateTemplate } = useTemplates();
   const { setHtml, setCss, setData } = useEditorStore();
   const [loading, setLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const menuRef = useRef(null);
@@ -29,7 +31,9 @@ export default function TemplateListItem({ template }) {
       router.push(`/?templateId=${template.id}`);
     } catch (error) {
       console.error('Error loading template:', error);
-      alert('Error al cargar el template: ' + error.message);
+      if (onAction) {
+        onAction('error', template.id, 'Error al cargar el template: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -37,22 +41,25 @@ export default function TemplateListItem({ template }) {
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(template.id);
-    alert('ID copiado al portapapeles');
+    if (onAction) {
+      onAction('copied', template.id);
+    }
   };
 
-  const handleDelete = async () => {
-    if (!confirm(`¿Estás seguro de que quieres eliminar "${template.name}"? Esta acción no se puede deshacer.`)) {
-      return;
-    }
-
+  const handleDeleteConfirm = async () => {
     try {
       setDeleting(true);
-      await removeTemplate(template.id);
-      alert('Template eliminado exitosamente');
+      setShowDeleteConfirm(false);
       setShowMenu(false);
+      await removeTemplate(template.id);
+      if (onAction) {
+        onAction('deleted', template.id);
+      }
     } catch (error) {
       console.error('Error deleting template:', error);
-      alert('Error al eliminar el template: ' + error.message);
+      if (onAction) {
+        onAction('error', template.id, error.message);
+      }
     } finally {
       setDeleting(false);
     }
@@ -61,12 +68,16 @@ export default function TemplateListItem({ template }) {
   const handleDuplicate = async () => {
     try {
       setDuplicating(true);
-      await duplicateTemplate(template.id);
-      alert('Template duplicado exitosamente');
       setShowMenu(false);
+      await duplicateTemplate(template.id);
+      if (onAction) {
+        onAction('duplicated', template.id);
+      }
     } catch (error) {
       console.error('Error duplicating template:', error);
-      alert('Error al duplicar el template: ' + error.message);
+      if (onAction) {
+        onAction('error', template.id, error.message);
+      }
     } finally {
       setDuplicating(false);
     }
@@ -154,7 +165,10 @@ export default function TemplateListItem({ template }) {
                   {duplicating ? 'Duplicando...' : 'Duplicar'}
                 </button>
                 <button
-                  onClick={handleDelete}
+                  onClick={() => {
+                    setShowDeleteConfirm(true);
+                    setShowMenu(false);
+                  }}
                   disabled={deleting}
                   style={{
                     width: '100%',
@@ -205,6 +219,17 @@ export default function TemplateListItem({ template }) {
           </div>
         )}
       </div>
+      
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Eliminar Template"
+        message={`¿Estás seguro de que quieres eliminar "${template.name}"? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        isDestructive={true}
+      />
     </div>
   );
 }
