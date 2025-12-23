@@ -18,6 +18,7 @@ export default function EditorContainer() {
   const [showAISidebar, setShowAISidebar] = useState(true);
   const [isClosing, setIsClosing] = useState(false);
   const [currentTemplateId, setCurrentTemplateId] = useState(null);
+  const [currentTemplateVersionId, setCurrentTemplateVersionId] = useState(null);
   const [currentTemplateName, setCurrentTemplateName] = useState('');
   const [currentTemplateDescription, setCurrentTemplateDescription] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState(null);
@@ -102,12 +103,14 @@ export default function EditorContainer() {
       
       if (currentTemplateId) {
         // Actualizar template existente - usar nombre y descripción actuales
-        await updateTemplate(currentTemplateId, {
+        const version = await updateTemplate(currentTemplateId, {
           html,
           css,
           data,
           notes: `Actualizado: ${new Date().toLocaleString()}`,
         });
+        // updateTemplate retorna solo la version
+        setCurrentTemplateVersionId(version.id);
         showToast('Template actualizado exitosamente', 'success');
       } else {
         // Crear nuevo template - usar nombre por defecto
@@ -118,7 +121,7 @@ export default function EditorContainer() {
           hour: '2-digit',
           minute: '2-digit'
         })}`;
-        await saveTemplate({ 
+        const result = await saveTemplate({ 
           name: defaultName, 
           description: null, 
           html, 
@@ -126,6 +129,11 @@ export default function EditorContainer() {
           data,
           projectId: selectedProjectId || null
         });
+        // saveTemplate retorna { template, version }
+        setCurrentTemplateId(result.template.id);
+        setCurrentTemplateVersionId(result.version.id);
+        setCurrentTemplateName(defaultName);
+        setSelectedProjectId(result.template.project_id || null);
         showToast('Template guardado exitosamente', 'success');
       }
       // Marcar como guardado después de guardar exitosamente
@@ -208,6 +216,7 @@ export default function EditorContainer() {
           setCurrentTemplateName(templateData.name || '');
           setCurrentTemplateDescription(templateData.description || '');
           setSelectedProjectId(templateData.project_id || null);
+          setCurrentTemplateVersionId(templateData.version.id || null);
           // Marcar como guardado después de cargar
           setTimeout(() => {
             markAsSaved();
@@ -220,6 +229,7 @@ export default function EditorContainer() {
     } else if (!templateId && currentTemplateId) {
       // Si no hay templateId en la URL, limpiar el estado
       setCurrentTemplateId(null);
+      setCurrentTemplateVersionId(null);
       setCurrentTemplateName('');
       setCurrentTemplateDescription('');
       setSelectedProjectId(null);
@@ -230,6 +240,7 @@ export default function EditorContainer() {
       setCurrentTemplateName('');
       setCurrentTemplateDescription('');
       setSelectedProjectId(null);
+      setCurrentTemplateVersionId(null);
       // Marcar estado inicial como guardado
       markAsSaved();
     }
@@ -427,7 +438,11 @@ export default function EditorContainer() {
         </div>
       </div>
       <div className="right-panel">
-        <PreviewPane />
+        <PreviewPane 
+          templateVersionId={currentTemplateVersionId}
+          templateId={currentTemplateId}
+          projectId={selectedProjectId}
+        />
       </div>
       
       <Toast
