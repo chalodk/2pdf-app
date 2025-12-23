@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useEditorStore } from '../store/editorStore';
+import { useRenderJobs } from '../hooks/useRenderJobs';
+import GeneratePDFModal from './GeneratePDFModal';
 
 function getValue(obj, path) {
   return path.split('.').reduce((o, k) => (o ? o[k] : ''), obj);
@@ -110,12 +112,15 @@ async function generatePDF(html, css, data) {
   }
 }
 
-export default function PreviewPane() {
+export default function PreviewPane({ templateVersionId, templateId, projectId }) {
   const [output, setOutput] = useState('');
   const [blobUrl, setBlobUrl] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [currentJobId, setCurrentJobId] = useState(null);
   const blobUrlRef = useRef('');
+  const { createJob } = useRenderJobs();
   
   // Get state from Zustand store
   const html = useEditorStore((state) => state.html);
@@ -168,6 +173,57 @@ export default function PreviewPane() {
     }
   };
 
+  const handleGenerateAndSavePDF = async () => {
+    // Validar que el template esté guardado
+    if (!templateVersionId) {
+      alert('Por favor guarda el template primero antes de generar un PDF. El template debe estar guardado para poder generar documentos.');
+      return;
+    }
+
+    if (!projectId) {
+      alert('Por favor asocia este template a un proyecto antes de generar un PDF. Los documentos deben estar asociados a un proyecto.');
+      return;
+    }
+
+    try {
+      setIsGenerating(true);
+      
+      // Validar que data sea JSON válido
+      let jsonData;
+      try {
+        jsonData = JSON.parse(data);
+      } catch (parseError) {
+        throw new Error('El campo Data debe contener JSON válido');
+      }
+      
+      // Crear render job
+      const job = await createJob({
+        templateVersionId,
+        projectId: projectId,
+        payload: jsonData,
+        options: null,
+      });
+
+      if (!job || !job.id) {
+        throw new Error('No se pudo crear el render job');
+      }
+
+      // Mostrar modal con el job ID
+      setCurrentJobId(job.id);
+      setShowGenerateModal(true);
+    } catch (error) {
+      console.error('Error creating render job:', error);
+      alert('Error al generar PDF: ' + (error.message || 'Error desconocido'));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleJobSuccess = (jobData) => {
+    // El modal maneja la navegación y descarga
+    console.log('Job completed:', jobData);
+  };
+
   if (!mounted) {
     return (
       <div className="preview-container">
@@ -187,25 +243,56 @@ export default function PreviewPane() {
   }
 
   return (
-    <div className="preview-container">
-      <div className="preview-header">
-        <button 
-          className="generate-pdf-btn"
-          onClick={handleGeneratePDF}
-          disabled={isGenerating}
-        >
-          {isGenerating ? 'Generando...' : 'Generar PDF'}
-        </button>
+    <>
+      <div className="preview-container">
+        <div className="preview-header" style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            className="generate-pdf-btn"
+            onClick={handleGeneratePDF}
+            disabled={isGenerating}
+            title="Generar PDF y descargar directamente (sin guardar en BD)"
+          >
+            {isGenerating ? 'Generando...' : 'Generar PDF'}
+          </button>
+          <button 
+            className="generate-pdf-btn"
+            onClick={handleGenerateAndSavePDF}
+            disabled={isGenerating || !templateVersionId || !projectId}
+            style={{
+              backgroundColor: (templateVersionId && projectId) ? '#10b981' : '#9ca3af',
+              cursor: (templateVersionId && projectId) ? 'pointer' : 'not-allowed',
+            }}
+            title={
+              !templateVersionId 
+                ? 'Guarda el template primero para generar y guardar PDF'
+                : !projectId
+                ? 'Asocia este template a un proyecto para generar PDF'
+                : 'Generar PDF y guardarlo en la base de datos'
+            }
+          >
+            {isGenerating ? 'Generando...' : 'Generar y Guardar PDF'}
+          </button>
+        </div>
+        {blobUrl && (
+          <iframe
+            className="preview-frame"
+            src={blobUrl}
+            sandbox="allow-same-origin allow-scripts allow-popups"
+            title="Preview"
+          />
+        )}
       </div>
-      {blobUrl && (
-        <iframe
-          className="preview-frame"
-          src={blobUrl}
-          sandbox="allow-same-origin allow-scripts allow-popups"
-          title="Preview"
-        />
-      )}
-    </div>
+
+      <GeneratePDFModal
+        isOpen={showGenerateModal}
+        onClose={() => {
+          setShowGenerateModal(false);
+          setCurrentJobId(null);
+        }}
+        jobId={currentJobId}
+        onSuccess={handleJobSuccess}
+      />
+    </>
   );
 }
 
