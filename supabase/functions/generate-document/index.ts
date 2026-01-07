@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders, handleCors } from '../_shared/cors.ts'
-import { getSupabaseAdmin } from '../_shared/supabase.ts'
+import { adminGet, adminPost } from '../_shared/supabase.ts'
 import { hashApiKey } from '../_shared/hash.ts'
 
 interface GenerateRequest {
@@ -52,30 +52,30 @@ async function validateApiKey(apiKey: string | null) {
   }
 
   const keyHash = await hashApiKey(apiKey)
-  const supabase = getSupabaseAdmin()
 
-  const { data: keyRecord, error: dbError } = await supabase
-    .from('api_keys')
-    .select(`
-      id,
-      name,
-      environment,
-      is_active,
-      project_id,
-      daily_limit,
-      monthly_limit,
-      expires_at,
-      projects (
-        id,
-        name,
-        organization_id
-      )
-    `)
-    .eq('key_hash', keyHash)
-    .single()
+  const select = encodeURIComponent(
+    [
+      'id',
+      'name',
+      'environment',
+      'is_active',
+      'project_id',
+      'daily_limit',
+      'monthly_limit',
+      'expires_at',
+      'projects(id,name,organization_id)',
+    ].join(',')
+  )
+
+  const { data: rows, error: dbError } = await adminGet<ApiKeyRecord[]>(
+    `/rest/v1/api_keys?select=${select}&key_hash=eq.${keyHash}&limit=1`
+  )
+
+  const keyRecord = rows?.[0]
 
   if (dbError || !keyRecord) {
-    return { valid: false, error: 'API Key no encontrada o inválida' }
+    console.error('Error buscando API Key:', dbError)
+    return { valid: false, error: `API Key no encontrada o inválida: ${dbError || 'No encontrada'}` }
   }
 
   const record = keyRecord as ApiKeyRecord
@@ -151,27 +151,25 @@ serve(async (req) => {
       )
     }
 
-    // 3. Validar que el template existe (sin obtener HTML/CSS)
-    const supabase = getSupabaseAdmin()
-    const { data: template, error: templateError } = await supabase
-      .from('templates')
-      .select(`
-        id,
-        name,
-        organization_id,
-        project_id,
-        template_versions (
-          id,
-          is_default
-        )
-      `)
-      .eq('id', template_id)
-      .eq('organization_id', keyRecord!.projects.organization_id)
-      .single()
+    // 3. Validar que el template existe (sin obtener HTML/CSS) - PostgREST
+    const templateSelect = encodeURIComponent(
+      ['id', 'name', 'organization_id', 'project_id', 'template_versions(id,is_default)'].join(',')
+    )
+
+    const { data: templates, error: templateError } = await adminGet<Template[]>(
+      `/rest/v1/templates?select=${templateSelect}&id=eq.${template_id}&organization_id=eq.${keyRecord!.projects.organization_id}&limit=1`
+    )
+
+    const template = templates?.[0]
 
     if (templateError || !template) {
+      console.error('Error buscando template:', templateError)
       return new Response(
-        JSON.stringify({ error: 'Template no encontrado o sin permisos' }),
+        JSON.stringify({ 
+          error: 'Template no encontrado o sin permisos',
+          details: templateError?.message,
+          template_id: template_id
+        }),
         { 
           status: 404, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -196,9 +194,9 @@ serve(async (req) => {
     }
 
     // 4. Crear render_job con status 'queued' (el Worker lo procesará)
-    const { data: renderJob, error: jobError } = await supabase
-      .from('render_jobs')
-      .insert({
+    const { data: insertedJobs, error: jobError } = await adminPost<Record<string, unknown>[]>(
+      '/rest/v1/render_jobs',
+      {
         organization_id: keyRecord!.projects.organization_id,
         project_id: keyRecord!.project_id,
         template_version_id: defaultVersion.id,
@@ -207,15 +205,19 @@ serve(async (req) => {
         payload: data,
         options: options || {},
         queued_at: new Date().toISOString(),
-        // started_at lo marcará el Worker cuando comience a procesar
-      })
-      .select()
-      .single()
+      },
+      'return=representation'
+    )
 
-    if (jobError) {
+    const renderJob = insertedJobs?.[0]
+
+    if (jobError || !renderJob) {
       console.error('Error creating render job:', jobError)
       return new Response(
-        JSON.stringify({ error: 'Error al crear job de renderizado' }),
+        JSON.stringify({ 
+          error: 'Error al crear job de renderizado',
+          details: jobError,
+        }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -245,10 +247,15 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error generating document:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
     return new Response(
       JSON.stringify({ 
         error: 'Error interno del servidor',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        message: errorMessage,
+        stack: errorStack,
+        type: error instanceof Error ? error.constructor.name : typeof error
       }),
       { 
         status: 500, 

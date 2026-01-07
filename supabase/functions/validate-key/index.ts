@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders, handleCors } from '../_shared/cors.ts'
-import { getSupabaseAdmin } from '../_shared/supabase.ts'
+import { adminGet } from '../_shared/supabase.ts'
 import { hashApiKey } from '../_shared/hash.ts'
 
 interface ApiKeyRecord {
@@ -59,28 +59,26 @@ serve(async (req) => {
     // Hashear la key para buscar en DB
     const keyHash = await hashApiKey(apiKey)
 
-    // Buscar en la base de datos
-    const supabase = getSupabaseAdmin()
-    const { data: keyRecord, error: dbError } = await supabase
-      .from('api_keys')
-      .select(`
-        id,
-        name,
-        environment,
-        is_active,
-        project_id,
-        daily_limit,
-        monthly_limit,
-        expires_at,
-        projects (
-          id,
-          name,
-          slug,
-          organization_id
-        )
-      `)
-      .eq('key_hash', keyHash)
-      .single()
+    // Buscar en la base de datos (PostgREST) - evita dependencias remotas (esm.sh)
+    const select = encodeURIComponent(
+      [
+        'id',
+        'name',
+        'environment',
+        'is_active',
+        'project_id',
+        'daily_limit',
+        'monthly_limit',
+        'expires_at',
+        'projects(id,name,slug,organization_id)',
+      ].join(',')
+    )
+
+    const { data: rows, error: dbError } = await adminGet<ApiKeyRecord[]>(
+      `/rest/v1/api_keys?select=${select}&key_hash=eq.${keyHash}&limit=1`
+    )
+
+    const keyRecord = rows?.[0]
 
     if (dbError || !keyRecord) {
       return new Response(
