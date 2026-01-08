@@ -1,5 +1,27 @@
 # Edge Functions - generate-document
 
+## Flujo Arquitectónico
+
+```
+Cliente (POST)
+  ↓
+Edge Function (generate-document)
+  ├─ Valida API Key
+  ├─ Valida template existe
+  ├─ Crea render_job (status: queued) en DB
+  └─ Retorna 202 + job_id
+     ↓
+Worker (pendiente)
+  ├─ Poll jobs con status 'queued'
+  ├─ Obtiene template HTML/CSS
+  ├─ Procesa template con datos
+  ├─ Genera PDF (Playwright/AWS)
+  ├─ Guarda en Storage
+  └─ Actualiza job (status: succeeded/failed)
+     ↓
+Cliente consulta status o recibe webhook
+```
+
 ## Qué hace
 - Valida API Key (`X-API-Key`)
 - Valida que el template existe
@@ -14,7 +36,6 @@
 
 **Headers:**
 ```
-apikey: sb_publishable_FjE5XiHqFbRWYAqTj4mYoQ_8Hnbz73I
 X-API-Key: pk_live_n2RNA5oVeDx8cCthNMGuSQJcebd3THXy
 Content-Type: application/json
 ```
@@ -41,6 +62,7 @@ Content-Type: application/json
 ## Config importante
 - `Verify JWT with legacy secret`: **OFF** (en dashboard de Supabase)
 - Auth real: `X-API-Key` (hasheada en BD)
+- `SUPABASE_ANON_KEY` debe estar en Edge Function Secrets (se obtiene automáticamente desde ahí)
 
 ## Archivos
 - `supabase/functions/generate-document/index.ts`

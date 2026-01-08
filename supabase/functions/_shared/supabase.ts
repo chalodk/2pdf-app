@@ -11,6 +11,10 @@ export function getServiceRoleKey(): string {
   return Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 }
 
+export function getAnonKey(): string {
+  return Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+}
+
 export function getAdminHeaders(extra?: Record<string, string>): Record<string, string> {
   const key = getServiceRoleKey()
   return {

@@ -34,37 +34,42 @@ Abre: http://localhost:3000
 
 ## Probar Edge Functions
 
-### En Postman:
+### 1. Validar API Key
 
 **URL:** `POST https://wxtgjdagxhobtrrkyozo.supabase.co/functions/v1/validate-key`
 
 **Headers:**
 - `X-API-Key`: `tu_api_key_aqui`
 - `Content-Type`: `application/json`
-- `apikey`: `sb_publishable_FjE5XiHqFbRWYAqTj4mYoQ_8Hnbz73I`
 
-**Respuesta esperada:**
+### 2. Generar Documento (crea job)
+
+**URL:** `POST https://wxtgjdagxhobtrrkyozo.supabase.co/functions/v1/generate-document`
+
+**Headers:**
+- `X-API-Key`: `pk_live_n2RNA5oVeDx8cCthNMGuSQJcebd3THXy`
+- `Content-Type`: `application/json`
+
+**Body:**
 ```json
 {
-  "valid": true,
-  "key": {
-    "name": "Tu API Key",
-    "environment": "production"
-  },
-  "project": {
-    "name": "Tu Proyecto"
+  "template_id": "4d11d395-33b3-484d-b8bc-2eddf16675f3",
+  "data": {
+    "nombre": "Test"
   }
 }
 ```
 
-### Con cURL:
-
-```bash
-curl -X POST https://wxtgjdagxhobtrrkyozo.supabase.co/functions/v1/validate-key \
-  -H "X-API-Key: tu_api_key" \
-  -H "Content-Type: application/json" \
-  -H "apikey: sb_publishable_FjE5XiHqFbRWYAqTj4mYoQ_8Hnbz73I"
+**Respuesta (202):**
+```json
+{
+  "job_id": "uuid-del-job",
+  "status": "queued",
+  "message": "Job creado exitosamente. El documento será generado de forma asíncrona."
+}
 ```
+
+Ver más detalles en [EDGE_FUNCTIONS.md](./EDGE_FUNCTIONS.md)
 
 ## Deployar Edge Functions
 
