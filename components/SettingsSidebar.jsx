@@ -135,6 +135,8 @@ export default function SettingsSidebar({ activeSection, onSectionChange, userNa
               router.push('/templates');
             } else if (item.id === 'Projects') {
               router.push('/projects');
+            } else if (item.id === 'Documents') {
+              router.push('/documents');
             } else if (item.id === 'Team') {
               router.push('/team');
             } else if (item.id === 'API Key') {
