@@ -45,19 +45,14 @@ export default function Documents() {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  // Filtrar documentos
+  // Filtrar documentos (Todos los proyectos → sin filtro; luego por proyecto, estado y búsqueda)
   const filteredDocuments = documents.filter(doc => {
-    // Filtrar por proyecto
-    if (selectedProjectFilter && doc.project_id !== selectedProjectFilter) {
+    if (selectedProjectFilter && String(doc.project_id || '') !== String(selectedProjectFilter)) {
       return false;
     }
-    
-    // Filtrar por status
     if (selectedStatusFilter && doc.status !== selectedStatusFilter) {
       return false;
     }
-    
-    // Filtrar por término de búsqueda
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
       const idMatch = doc.id?.toLowerCase().includes(term);
@@ -65,9 +60,12 @@ export default function Documents() {
       const projectMatch = doc.project_name?.toLowerCase().includes(term);
       return idMatch || templateMatch || projectMatch;
     }
-    
     return true;
   });
+
+  const selectedProjectName = selectedProjectFilter && projects?.length
+    ? projects.find(p => String(p.id) === String(selectedProjectFilter))?.name
+    : null;
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -246,7 +244,9 @@ export default function Documents() {
               </p>
               <p style={{ fontSize: '0.875rem' }}>
                 {searchTerm || selectedProjectFilter || selectedStatusFilter
-                  ? 'Intenta ajustar los filtros de búsqueda'
+                  ? selectedProjectName
+                    ? `No hay documentos en "${selectedProjectName}". Genera documentos con la API usando la API key de este proyecto.`
+                    : 'Intenta ajustar los filtros de búsqueda'
                   : 'Los documentos aparecerán aquí cuando uses la API para generar PDFs'}
               </p>
             </div>

@@ -97,6 +97,9 @@ export default function DocumentListItem({ document, onView, onRetry }) {
             <CopyIcon />
           </button>
         </div>
+        <div style={{ marginBottom: '8px', color: '#6b7280', fontSize: '0.875rem' }}>
+          Proyecto: {document.project_name || 'Unknown'}
+        </div>
         <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           <span style={{ color: '#ec4899', fontSize: '0.875rem' }}>
             Template: {document.template_name || 'Unknown'}
